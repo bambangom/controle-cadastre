@@ -7,9 +7,14 @@ from streamlit_folium import st_folium
 import zipfile
 import os
 import tempfile
-st.set_page_config(page_title=txt["title"], layout="wide")
+
+# ✅ 1. Définir un titre par défaut avant tout
+st.set_page_config(page_title="🧭 Contrôle Qualité Cadastral", layout="wide")
+
+# ✅ 2. Sélecteur de langue
 lang = st.selectbox("🌐 Choisir une langue / Choose a language", ["Français", "English"])
 
+# ✅ 3. Textes localisés
 texts = {
     "Français": {
         "title": "🧭 Contrôle Qualité de Shapefile Cadastral",
@@ -31,6 +36,7 @@ texts = {
     }
 }
 
+# ✅ 4. Texte actif selon langue
 txt = texts[lang]
 
 
