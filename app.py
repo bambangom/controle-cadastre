@@ -1,6 +1,3 @@
-# Générer une nouvelle version complète de app.py avec toutes les corrections et génération de rapport intégrées
-
-app_code = '''
 import streamlit as st
 import geopandas as gpd
 import pandas as pd
@@ -117,8 +114,3 @@ if uploaded_file:
                         df_incoh.to_excel(writer, sheet_name="Incohérences", index=False)
                         df_overlaps.drop(columns="geom").to_excel(writer, sheet_name="Superpositions", index=False)
                     st.download_button(txt["excel_button"], tmp_xls.read(), file_name="rapport_qualite.xlsx")
-'''
-
-
-
-app_file_path
