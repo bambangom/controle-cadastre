@@ -119,9 +119,6 @@ if uploaded_file:
                     st.download_button(txt["excel_button"], tmp_xls.read(), file_name="rapport_qualite.xlsx")
 '''
 
-# Sauvegarder dans un fichier
-app_file_path = "/mnt/data/app_corrected.py"
-with open(app_file_path, "w") as f:
-    f.write(app_code)
+
 
 app_file_path
