@@ -7,7 +7,7 @@ from streamlit_folium import st_folium
 import zipfile
 import os
 import tempfile
-
+st.set_page_config(page_title=txt["title"], layout="wide")
 lang = st.selectbox("🌐 Choisir une langue / Choose a language", ["Français", "English"])
 
 texts = {
@@ -33,7 +33,7 @@ texts = {
 
 txt = texts[lang]
 
-st.set_page_config(page_title=txt["title"], layout="wide")
+
 st.title(txt["title"])
 uploaded_file = st.file_uploader(txt["upload"], type="zip")
 
