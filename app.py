@@ -76,7 +76,12 @@ if uploaded_file:
                                 "area_m2": inter.area,
                                 "geom": inter
                             })
-            df_overlaps = gpd.GeoDataFrame(overlaps, geometry="geom", crs=crs)
+
+            # ✅ Correction ici : éviter ValueError si overlaps vide
+            if overlaps:
+                df_overlaps = gpd.GeoDataFrame(overlaps, geometry="geom", crs=crs)
+            else:
+                df_overlaps = gpd.GeoDataFrame(columns=["parcelle_1", "parcelle_2", "area_m2", "geom"], geometry="geom", crs=crs)
 
             summary = pd.DataFrame({
                 "Anomalie" if lang == "Français" else "Issue": [
