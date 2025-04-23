@@ -1,3 +1,6 @@
+# Générer une nouvelle version complète de app.py avec toutes les corrections et génération de rapport intégrées
+
+app_code = '''
 import streamlit as st
 import geopandas as gpd
 import pandas as pd
@@ -8,13 +11,10 @@ import zipfile
 import os
 import tempfile
 
-# ✅ 1. Définir un titre par défaut avant tout
 st.set_page_config(page_title="🧭 Contrôle Qualité Cadastral", layout="wide")
 
-# ✅ 2. Sélecteur de langue
 lang = st.selectbox("🌐 Choisir une langue / Choose a language", ["Français", "English"])
 
-# ✅ 3. Textes localisés
 texts = {
     "Français": {
         "title": "🧭 Contrôle Qualité de Shapefile Cadastral",
@@ -36,26 +36,24 @@ texts = {
     }
 }
 
-# ✅ 4. Texte actif selon langue
 txt = texts[lang]
-
 
 st.title(txt["title"])
 uploaded_file = st.file_uploader(txt["upload"], type="zip")
 
 if uploaded_file:
     with tempfile.TemporaryDirectory() as tmpdir:
-        zip_path = os.path.join(tmpdir, "shapefile.zip")
+        zip_path = os.path.join(tmpdir, "uploaded.zip")
         with open(zip_path, "wb") as f:
             f.write(uploaded_file.read())
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(tmpdir)
 
-        shp_files = [f for f in os.listdir(tmpdir) if f.endswith(".shp")]
+        shp_files = [os.path.join(tmpdir, f) for f in os.listdir(tmpdir) if f.endswith(".shp")]
         if not shp_files:
             st.error(txt["error_shp"])
         else:
-            shapefile_path = os.path.join(tmpdir, shp_files[0])
+            shapefile_path = shp_files[0]
             df = gpd.read_file(shapefile_path)
             crs = df.crs
 
@@ -64,7 +62,7 @@ if uploaded_file:
                     df[field] = pd.to_datetime(df[field], errors="coerce")
 
             df_valid = df[df["Num_piece"].notna() & ~df["Num_piece"].isin(["Neant", "Néant", "CNI perdu"])]
-            df_doublons = df_valid[df_valid["Num_piece"].isin(df_valid["Num_piece"].duplicated(keep=False))]
+            df_doublons = df_valid[df_valid["Num_piece"].duplicated(keep=False)]
             df_len_err = df_valid[df_valid["Num_piece"].str.len().fillna(0).astype(int).between(13, 15) == False]
             df_empty = df[df["Nom"].isna() | df["Prenom"].isna() | df["Nat"].isna() | df["Lieu_naiss"].isna()]
             df_incoh = df_valid.groupby("Num_piece").filter(lambda x: x[["Nom", "Prenom"]].nunique().sum() > 2)
@@ -79,9 +77,9 @@ if uploaded_file:
                                 "parcelle_1": a.get("Num_parcel", i),
                                 "parcelle_2": b.get("Num_parcel", j),
                                 "area_m2": inter.area,
-                                "geometry": inter
+                                "geom": inter
                             })
-            df_overlaps = gpd.GeoDataFrame(overlaps, geometry="geometry", crs=crs)
+            df_overlaps = gpd.GeoDataFrame(overlaps, geometry="geom", crs=crs)
 
             summary = pd.DataFrame({
                 "Anomalie" if lang == "Français" else "Issue": [
@@ -92,8 +90,7 @@ if uploaded_file:
                     "Noms incohérents" if lang == "Français" else "Conflicting names"
                 ],
                 "Nombre" if lang == "Français" else "Count": [
-                    len(df_doublons), len(df_len_err),
-                    len(df_overlaps), len(df_empty), len(df_incoh)
+                    len(df_doublons), len(df_len_err), len(df_overlaps), len(df_empty), len(df_incoh)
                 ]
             })
 
@@ -105,7 +102,7 @@ if uploaded_file:
                     df_overlaps.geometry.centroid.y.mean(),
                     df_overlaps.geometry.centroid.x.mean()], zoom_start=13)
                 for _, row in df_overlaps.iterrows():
-                    geo_json = gpd.GeoSeries(row["geometry"]).simplify(0.001).to_json()
+                    geo_json = gpd.GeoSeries(row["geom"]).simplify(0.001).to_json()
                     folium.GeoJson(data=geo_json, style_function=lambda x: {"color": "red"}).add_to(m)
                 st.subheader(txt["map"])
                 st_folium(m, width=1000, height=500)
@@ -118,5 +115,13 @@ if uploaded_file:
                         df_len_err.to_excel(writer, sheet_name="Longueur", index=False)
                         df_empty.to_excel(writer, sheet_name="Champs_vides", index=False)
                         df_incoh.to_excel(writer, sheet_name="Incohérences", index=False)
-                        df_overlaps.drop(columns="geometry").to_excel(writer, sheet_name="Superpositions", index=False)
+                        df_overlaps.drop(columns="geom").to_excel(writer, sheet_name="Superpositions", index=False)
                     st.download_button(txt["excel_button"], tmp_xls.read(), file_name="rapport_qualite.xlsx")
+'''
+
+# Sauvegarder dans un fichier
+app_file_path = "/mnt/data/app_corrected.py"
+with open(app_file_path, "w") as f:
+    f.write(app_code)
+
+app_file_path
