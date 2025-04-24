@@ -69,7 +69,7 @@ if uploaded_file:
                 for j, b in df.iloc[i+1:].iterrows():
                     if a.geometry.intersects(b.geometry):
                         inter = a.geometry.intersection(b.geometry)
-                        if inter.geom_type == 'Polygon' and inter.area > 0.1:
+                        if inter.geom_type == 'Polygon' and inter.area > 0.00001:
                             overlaps.append({
                                 "parcelle_1": a.get("Num_parcel", i),
                                 "parcelle_2": b.get("Num_parcel", j),
